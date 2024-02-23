@@ -1,2 +1,2 @@
 # Neural-Network-parameters-with-Diffusion
-Neural-etwork-parameters-with-Diffusion
+Neural-network-parameters-with-Diffusion
