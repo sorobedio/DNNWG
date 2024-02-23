@@ -1,2 +1,2 @@
-# Neural-Network-parameters-with-Diffusion
+# DIFFUSION BASED NEURAL NETWORK WEIGHTS GENERATION
 Neural-network-parameters-with-Diffusion
