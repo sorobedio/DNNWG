@@ -37,3 +37,6 @@ configure the config file and run
 'python dtrainer.py'
 
 # sampling
+following mlp_sampling.py file
+
+# DOTO adding dummy experiments
