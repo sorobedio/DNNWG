@@ -1,9 +1,9 @@
 # DIFFUSION BASED NEURAL NETWORK WEIGHTS GENERATION
 Neural-network-parameters-with-Diffusion
-#DoTO
+# DoTO
 
 # Structure of the code
-## Folder stage 1 contains code for the VAE and folder stage 2 contains code for the diffusion process. If using a set-transformer-based dataset encoder, folder clips contain dataset alignment code.
+Folder stage 1 contains code for the VAE and folder stage 2 contains code for the diffusion process. If using a set-transformer-based dataset encoder, folder clips contain dataset alignment code.
 The dataset alignment required to trained the VAE first then used the frozen encoder to in the training process.
 
 We provide an example of config. file
