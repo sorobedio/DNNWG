@@ -25,7 +25,8 @@ to extract the enocder, loader the pretrained VAE and instantiate clipmodel from
     torch.save(clipmodel.state_dict(),'checkpoints/clip_models/weight_encoder_.ckpt')'
 The dataset alignment training process is done by running the code in cliptrainer file.
 'python cliptrainer.py'
-this step can be skipped is using mlp dataset encoder or jointly optimizing the set-transformer.
+
+this step can be skipped is using mlp dataset encoder or jointly optimizing the set-transformer or using a pretrained set-transformer.
 
 # After dataset alignment
 extract the dataset encoder checkpoint and save it in checkpoints/set-transformer (model.dataset_encoder.state_dict())
