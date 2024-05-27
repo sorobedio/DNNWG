@@ -1,0 +1,42 @@
+model:
+  base_learning_rate: 4.5e-6
+  target: stage1.models.autoencoder.VAENoDiscModel
+  params:
+    embed_dim: 4
+    input_key: 'weight'
+    learning_rate: 1.115e-3
+    lossconfig:
+      target: stage1.modules.losses.CustomLosses.Myloss
+      params:
+#        kl_weight: 0.01
+        kl_weight: 0.000001
+    ddconfig:
+      ddconfig:
+        double_z: True
+        z_channels: 4
+        resolution: 64
+        in_channels: 1
+        my_channels: 1
+        out_ch: 1
+        ch: 128
+        ch_mult: [ 1,1,2 ]  # num_down = len(ch_mult)-1
+        num_res_blocks: 2
+        attn_resolutions: [ 2, 4 ]
+        dropout: 0.0
+        in_dim: 2864
+        fdim: 4096
+
+data:
+  target: zooloaders.autoloader.ZooDataModule
+  params:
+    data_dir: 'pretrained weights'
+    batch_size: 64
+    num_workers: 8
+    scale: 1.0
+    dataset: "joint"
+    topk: null
+    normalize: False
+    num_sample: 5
+
+
+    ###27711441  3^3 5 13 1579  == 351 7895  135  20527

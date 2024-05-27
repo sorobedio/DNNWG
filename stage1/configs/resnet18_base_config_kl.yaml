@@ -1,0 +1,37 @@
+model:
+  base_learning_rate: 4.5e-6
+  target: stage1.models.autoencoder.VAENoDiscModel
+  params:
+    embed_dim: 4 #128 #64
+    input_key: 'weight'
+    learning_rate: 1.115e-3
+    lossconfig:
+      target: stage1.modules.losses.CustomLosses.Myloss
+      params:
+        kl_weight: 0.000001
+    ddconfig:
+      double_z: True
+      z_channels: 4
+      resolution: 128
+      in_channels: 462
+      my_channels: 924
+      out_ch: 462
+      ch: 64
+      ch_mult: [ 1,1, 1, 2 ]  # num_down = len(ch_mult)-1
+      num_res_blocks: 2
+      attn_resolutions: [ 8, 4 ]
+      dropout: 0.0
+      in_dim: 12143
+      fdim: 8192
+
+data:
+  target: zooloaders.autoloader.ZooDataModule # lightning data loader to load the pretrained weights vectors
+  params:
+    data_dir: 'path to checkpoints'
+    batch_size: 16
+    num_workers: 8
+    scale: 0.125
+    dataset: "joint"
+    topk: null
+    normalize: False
+    num_sample: 5

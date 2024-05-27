@@ -1,0 +1,51 @@
+model:
+  base_learning_rate: 5.0e-5   # set to target_lr by starting main.py with '--scale_lr False'
+  target: clips.models.myclip.CLIPModel
+  params:
+    ckpt_path: null
+    temperature: 1.0
+    d_embedding: 1024
+    w_embedding: 1024
+    projection_dim: 1024
+    input_key: "weight"
+    cond_key: "dataset"
+    dataset_encoder_trainable: True
+    weight_encoder_config:
+      target: clips.modules.Weight_embeder.AutoencoderKL
+      params:
+        embed_dim: 4
+        input_key: 'weight'
+        cond_key: "dataset"
+        ckpt_path: 'put your VAE encoder only checkpoint path here'
+        ddconfig:
+          double_z: True
+          z_channels: 4
+          resolution: 128
+          in_channels: 135
+          my_channels: 135
+          out_ch: 135
+          ch: 128
+          ch_mult: [ 1,1, 1, 1 ]  # num_down = len(ch_mult)-1
+          num_res_blocks: 2
+          attn_resolutions: [ 16,8 ]
+          dropout: 0.0
+          in_dim: 20527
+          fdim: 16384
+
+
+    dataset_encoder_config:
+      target: clips.modules.dataset_encoder.MyEmbedData
+      params:
+        emb_dim: 1024
+        enconfig:
+          dim_input: 512
+          num_inds: 32
+          dim_hidden: 128
+          num_heads: 2
+          ln: False
+        deconfig:
+          num_outputs: 1
+          dim_output: 512
+          dim_hidden: 128
+          num_heads: 2
+          ln: False

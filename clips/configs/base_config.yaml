@@ -1,0 +1,63 @@
+model:
+  base_learning_rate: 5.0e-5
+  target: clips.models.myclip.CLIPModel
+  params:
+    ckpt_path: null
+    temperature: 1.0
+    d_embedding: 1024
+    w_embedding: 1024
+    projection_dim: 1024
+    input_key: "weight"
+    cond_key: "dataset"
+    dataset_encoder_trainable: True
+    weight_encoder_config:
+      target: clips.modules.Weight_embeder.AutoencoderKL
+      params:
+        embed_dim: 4
+        input_key: 'weight'
+        cond_key: "dataset"
+        ckpt_path: null # checkpoints of the encoder part extracted from the autoencoder
+        ddconfig:
+          double_z: True
+          z_channels: 4
+          resolution: 64
+          in_channels: 1
+          my_channels: 1
+          out_ch: 1
+          ch: 128
+          ch_mult: [ 1,1,2 ]  # num_down = len(ch_mult)-1
+          num_res_blocks: 2
+          attn_resolutions: [ 2, 4 ]
+          dropout: 0.0
+          in_dim: 2864
+          fdim: 4096
+
+
+    dataset_encoder_config:
+      target: clips.modules.dataset_encoder.EmbedData
+      params:
+        emb_dim: 1024
+        enconfig:
+          dim_input: 512
+          num_inds: 32
+          dim_hidden: 128
+          num_heads: 2
+          ln: False
+        deconfig:
+          num_outputs: 1
+          dim_output: 512
+          dim_hidden: 128
+          num_heads: 2
+          ln: False
+
+data:
+  target: zooloaders.ldmloader.ZooDataModule
+  params:
+    data_dir: 'pretrained weights'
+    batch_size: 20
+    scale: 1.0  # WHETHER TO scale up the weights  weights/scale
+    num_workers: 8
+    dataset: "joint"
+    topk: null
+    normalize: False
+    num_sample: 5

@@ -1,0 +1,134 @@
+model:
+  base_learning_rate: 5.0e-5   # set to target_lr by starting main.py with '--scale_lr False'
+  target: stage2.models.ddpm.LatentDiffusion
+  params:
+    learning_rate: 1.133e-4
+    linear_start: 0.0015
+    linear_end: 0.0155
+    num_timesteps_cond: 1
+    log_every_t: 200
+    timesteps: 1024
+    loss_type: l2
+    first_stage_key: "weight"
+    cond_stage_key: "dataset"
+    input_size: 32
+    channels: 1
+    embdim: 4
+    latent_size: 16
+    cond_stage_trainable: True #'concat', 'crossattn'
+    concat_mode: True
+    scale_by_std: True
+    monitor: 'val/loss_simple_ema'
+
+    scheduler_config: # 10000 warmup steps
+      target: stage2.lr_scheduler.LambdaLinearScheduler
+      params:
+        warm_up_steps: [10000]
+        cycle_lengths: [10000000000000]
+        f_start: [1.e-6]
+        f_max: [1.]
+        f_min: [ 1.]
+
+    unet_config:
+      target: stage2.modules.myopenaimodel.UNetModel
+      params:
+        image_size: 32
+        in_channels: 2
+        out_channels: 1
+        model_channels: 256
+        attention_resolutions: [4, 8]   # 32, 16, 8, 4
+        num_res_blocks: 2
+        channel_mult: [ 1,1,1, 2]  # 32, 16, 8, 4, 2
+        num_heads: 2
+        use_scale_shift_norm: True
+        resblock_updown: True
+
+    first_stage_config:
+      target: stage1.models.first_stage_model.AutoencoderKL
+      params:
+        #    monitor: "val/rec_loss"
+        embed_dim: 4 #128 #64
+        input_key: 'weight'
+        learning_rate: 1.115e-3
+        cond_key: "dataset"
+        ckpt_path: 'checkpoints/stage1/resnet18_first_stage_model_.pt' #put your VAE checkpoint here
+        lossconfig:
+          target: stage1.modules.losses.CustomLosses.Myloss
+          params:
+            kl_weight: 0.000001
+        ddconfig:
+          double_z: True
+          z_channels: 4
+          resolution: 128
+          in_channels: 462
+          my_channels: 924
+          out_ch: 462
+          ch: 64
+          ch_mult: [ 1,1, 1, 2 ]  # num_down = len(ch_mult)-1
+          num_res_blocks: 2
+          attn_resolutions: [ 16,8 ]
+          dropout: 0.0
+          in_dim: 12143
+          fdim: 8192
+
+#    cond_stage_config:
+#      target: stage2.set_transformer.DatasetEmb.MyMLPEncoder
+#      params:
+#        input_size: 32
+#        embed_dim: 1600
+#        in_ch: 1
+#        num_sample: 1
+#        num_classes: 5
+
+#    cond_stage_config:
+#      target: stage2.set_transformer.dataset_encoder.SetAgregate
+#      params:
+#        input_size: 32
+#        in_ch: 1
+#        ckpt_path: 'checkpoints/conds/ckpt_max_corr.pt'
+#        intraconfig:
+#          dim_input: 512
+#          num_outputs: 1
+#          dim_output: 56
+#          dim_hidden: 56
+#          mode: 'sabPF'
+#        interconfig:
+#          dim_input: 56
+#          num_outputs: 1
+#          dim_output: 56
+#          dim_hidden: 56
+#          mode: 'sabPF'
+
+    cond_stage_config:
+      target: stage2.set_transformer.dataset_encoder.EmbedData
+      params:
+        input_size: 32
+        in_ch: 1
+        ckpt_path: 'checkpoints/clip_models/dataset_encoder_resnet18_.pt' #path to pretrained dataset encoder
+        emb_dim: 1024
+        enconfig:
+          dim_input: 512
+          num_inds: 32
+          dim_hidden: 128
+          num_heads: 2
+          ln: False
+        deconfig:
+          num_outputs: 1
+          dim_output: 512
+          dim_hidden: 128
+          num_heads: 2
+          ln: False
+
+
+
+data:
+  target: zooloaders.ldmloader.ZooDataModule
+  params:
+    data_dir: 'your pretrained weights folders'
+    batch_size: 16
+    num_workers: 8
+    scale: 0.125
+    dataset: "joint"
+    topk: null
+    normalize: False
+    num_sample: 5

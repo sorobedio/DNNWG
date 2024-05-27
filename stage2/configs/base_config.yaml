@@ -1,0 +1,117 @@
+model:
+  base_learning_rate: 5.0e-5   # set to target_lr by starting main.py with '--scale_lr False'
+  target: stage2.models.ddpm.LatentDiffusion
+  params:
+    learning_rate: 1.133e-4
+    linear_start: 0.0015
+    linear_end: 0.0155
+    num_timesteps_cond: 1
+    log_every_t: 200
+    timesteps: 1024
+    loss_type: l2
+    first_stage_key: "weight"
+    cond_stage_key: "dataset"
+    input_size: 32
+    channels: 1
+    embdim: 4
+    latent_size: 16
+    cond_stage_trainable: True #'concat', 'crossattn'
+    concat_mode: True
+    scale_by_std: True
+    monitor: 'val/loss_simple_ema'
+
+    scheduler_config: # 10000 warmup steps
+      target: stage2.lr_scheduler.LambdaLinearScheduler
+      params:
+        warm_up_steps: [10000]
+        cycle_lengths: [10000000000000]
+        f_start: [1.e-6]
+        f_max: [1.]
+        f_min: [ 1.]
+
+    unet_config:
+      target: stage2.modules.myopenaimodel.UNetModel
+      params:
+        image_size: 32
+        in_channels: 2
+        out_channels: 1
+        model_channels: 256
+        attention_resolutions: [4, 8]   # 32, 16, 8, 4
+        num_res_blocks: 2
+        channel_mult: [ 1,1,1, 2]  # 32, 16, 8, 4, 2
+        num_heads: 2
+        use_scale_shift_norm: True
+        resblock_updown: True
+
+    first_stage_config:
+      target: stage1.models.autoencoder.VAENoDiscModel
+      params:
+        #    monitor: "val/rec_loss"
+        embed_dim: 4 #128 #64
+        input_key: 'weight'
+        learning_rate: 1.115e-3
+        cond_key: "dataset"
+        ckpt_path: null # pretrained autoencoder checkpoints required
+        lossconfig:
+          target: stage1.modules.losses.CustomLosses.Myloss
+          params:
+            #        kl_weight: 0.01
+            kl_weight: 0.000001
+        ddconfig:
+          double_z: True
+          z_channels: 4
+          resolution: 64
+          in_channels: 1
+          my_channels: 1
+          out_ch: 1
+          ch: 128
+          ch_mult: [ 1,1, 2 ]  # num_down = len(ch_mult)-1
+          num_res_blocks: 2
+          attn_resolutions: [ 16,8 ]
+          dropout: 0.0
+          in_dim: 2864
+          fdim: 4096
+
+  #mlp based dataset encoder much faster
+    cond_stage_config:
+      target: stage2.set_transformer.DatasetEmb.MyMLPEncoder
+      params:
+        input_size: 32
+        in_ch: 1
+        out_dim: 4
+        embed_dim: 512
+        num_sample: 5
+        num_classes: 10
+
+# #set transformer based dataset encoder
+#    cond_stage_config:
+#      target: stage2.set_transformer.dataset_encoder.EmbedData
+#      params:
+#        input_size: 32
+#        in_ch: 1
+#        ckpt_path: null #checkpoint to pretrained dataset encoder
+#        emb_dim: 1024
+#        enconfig:
+#          dim_input: 512
+#          num_inds: 32
+#          dim_hidden: 128
+#          num_heads: 2
+#          ln: False
+#        deconfig:
+#          num_outputs: 1
+#          dim_output: 512
+#          dim_hidden: 128
+#          num_heads: 2
+#          ln: False
+
+data:
+  target: zooloaders.ldmloader.ZooDataModule
+  params:
+    data_dir: 'path to pretrained weights'
+    batch_size: 64
+    num_workers: 4
+    scale: 1.0
+    dataset: "joint"
+    topk: null
+    normalize: False
+    num_sample: 5
