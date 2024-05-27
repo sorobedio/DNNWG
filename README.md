@@ -39,4 +39,6 @@ configure the config file and run
 # sampling
 following mlp_sampling.py file
 
-# DOTO adding dummy experiments
+# DOTO 
+The resnet18 config file correspond to the configuration with checkpoints obtained with neural network diffusion code.
+## adding dummy experiments
