@@ -30,7 +30,7 @@ this step can be skipped is using mlp dataset encoder or jointly optimizing the 
 # After dataset alignment
 extract the dataset encoder checkpoint and save it in checkpoints/set-transformer (model.dataset_encoder.state_dict())
 
-# Diffusion trainingprocessL
+# Diffusion training process
 extract the conditioning images using  'compute_condition.py'
 configure the config file and run 
 'python dtrainer.py'
